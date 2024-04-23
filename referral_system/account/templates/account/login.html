@@ -1,14 +1,22 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Login</title>
-    </head>
-    <body>
-        <h2>Login</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Login</button>
-        </form>
-    </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login</title>
+</head>
+<body>
+    <h2>User Login</h2>
+    {% if phone_number %}
+    <p>Logged in as: {{ phone_number }}</p>
+    {% endif %}
+    <form action="{% url 'login_page' %}" method="post">
+        {% csrf_token %}
+        <label for="phone_number">Phone Number:</label><br>
+        <input type="text" id="phone_number" name="phone_number" minlength="11" maxlength="11" required><br>
+        <label for="password">Password (4 characters):</label><br>
+        <input type="password" id="password" name="password" minlength="4" maxlength="4" required><br><br>
+        <input type="submit" value="Login">
+    </form>
+</body>
 </html>
