@@ -6,6 +6,7 @@ class User(models.Model):
     password = models.CharField()
     invite_code = models.CharField(default='')
     activated_invite_code = models.BooleanField(default=False)
+    invited_by = models.CharField(default=None, null=True)
 
     def __str__(self):
         return self.phone_number

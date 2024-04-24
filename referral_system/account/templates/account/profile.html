@@ -6,43 +6,43 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-<h1>Профиль пользователя</h1>
-<p>Номер телефона: {{ user.phone_number }}</p>
-<p>Код приглашения: {{ user.invite_code }}</p>
-{% if user.invited_by %}
-<p>Приглашен пользователем: {{ user.invited_by.phone_number }}</p>
-{% endif %}
-<h2>Приглашенные пользователи</h2>
-<ul>
-    {% for invited_user in user.invited_users.all %}
-    <li>{{ invited_user.phone_number }}</li>
-    {% empty %}
-    <li>Нет приглашенных пользователей.</li>
-    {% endfor %}
-</ul>
-<!--<div class="container my-5">-->
-<!--    <h1>Profile</h1>-->
-<!--    <p>Phone Number: {{ user.phone_number }}</p>-->
-<!--    <p>Invite Code: {{ user.invite_code }}</p>-->
-<!--    {% if user.invited_by %}-->
-<!--    <p>Invited by: {{ user.invited_by.phone_number }}</p>-->
-<!--    {% endif %}-->
-<!--    <h2>Invited Users</h2>-->
-<!--    <ul>-->
-<!--        {% for invited_user in user.invited_users.all %}-->
-<!--        <li>{{ invited_user.phone_number }}</li>-->
-<!--        {% empty %}-->
-<!--        <li>No invited users yet.</li>-->
-<!--        {% endfor %}-->
-<!--    </ul>-->
-<!--    <form method="post">-->
-<!--        {% csrf_token %}-->
-<!--        <div class="form-group">-->
-<!--            <label for="invite_code">Enter Invite Code</label>-->
-<!--            <input type="text" class="form-control" id="invite_code" name="invite_code" required>-->
-<!--        </div>-->
-<!--        <button type="submit" class="btn btn-primary">Activate Invite Code</button>-->
-<!--    </form>-->
-<!--</div>-->
+
+<div class="container my-5">
+    <h1>Профиль</h1>
+    <p>Номер телефона: {{ user_data.phone_number }}</p>
+    <p>Личный код приглашения: {{ user_data.invite_code }}</p>
+    {% if user_data.invited_by %}
+    <p>Код приглашения другого пользователя: {{ user_data.invited_by.phone_number }}</p>
+    {% endif %}
+    <h2>Invited Users</h2>
+    <ul>
+        {% for invited_user in user_data.invited_users.all %}
+        <li>{{ invited_user.phone_number }}</li>
+        {% empty %}
+        <li>No invited users yet.</li>
+        {% endfor %}
+    </ul>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="invite_code">Введите код приглашения</label>
+            <input type="text" class="form-control" id="invited_by" name="invited_by" minlength="6" maxlength="6" required>
+        </div>
+        <button type="submit">Activate Invite Code</button>
+    </form>
+</div>
 </body>
 </html>
+
+<!--<!DOCTYPE html>-->
+<!--<html>-->
+<!--<head>-->
+<!--    <title>User Profile</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <h1>User Profile</h1>-->
+<!--    <p>Phone Number: {{ user_data.phone_number }}</p>-->
+<!--    <p>Invite Code: {{ user_data.invite_code }}</p>-->
+<!--    <p>Activated Invite Code: {{ user_data.activated_invite_code }}</p>-->
+<!--</body>-->
+<!--</html>-->

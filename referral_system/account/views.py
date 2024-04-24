@@ -1,9 +1,7 @@
 import random
 import time
 
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password, check_password
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,9 +12,6 @@ from django.shortcuts import render, redirect
 
 
 class UserRegistrationPhone(APIView):
-    # def get(self, request):
-    #     return Response({'message': 'Please enter your phone number'}, status=status.HTTP_200_OK)
-
     def post(self, request):
         if 'phone_number' in request.data:
             phone_number = request.data['phone_number']
@@ -52,19 +47,38 @@ class UserAuthentication(APIView):
         try:
             user = User.objects.get(phone_number=phone_number)
             if check_password(password, user.password):
-                # return Response({'message': 'Logged in successfully'}, status=status.HTTP_200_OK)
-                return redirect('profile')
+                serializer = UserSerializer(user)
+
+                # return Response(serializer.data, status=status.HTTP_200_OK)
+                return render(request, 'account/profile.html', {'user_data': serializer.data})
 
             return Response({'error': 'Invalid phone number or password'}, status=status.HTTP_401_UNAUTHORIZED)
         except User.DoesNotExist:
-            return Response({'error': 'Invalid phone number or password'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Invalid invite code'})
 
     def get(self, request):
         return render(request, 'account/login.html')
 
 
 class UserProfile(APIView):
-    # permission_classes = [IsAuthenticated]
+    def post(self, request):
+        invited_by = request.data.get('invited_by')
+        if invited_by:
+            try:
+                invited_user = User.objects.get(invite_code=invited_by)
+                if invited_user.invited_by:
+                    user = User.objects.get(phone_number=request.user.phone_number)
+                    user.invited_by = invited_by
+                    user.save()
+                    serializer = UserSerializer(user)
+                    return render(request, 'profile', {'user_data': serializer.data})
+                    # return Response({'message': 'Invite code activated successfully'}, status=201)
+                else:
+                    return Response({'error': 'Invalid invite code'}, status=400)
+            except User.DoesNotExist:
+                return Response({'error': 'Invalid invite code'}, status=400)
+        return Response({'error': 'Please enter an invite code'}, status=400)
+
     def get(self, request):
-        user = request.user
-        return render(request, 'account/profile.html', {'user': user})
+        return render(request, 'account/profile.html')
+
