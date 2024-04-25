@@ -31,6 +31,8 @@ class UserRegistrationPhone(APIView):
                 serializer = UserSerializer(user)
                 # return Response(serializer.data, status=status.HTTP_201_CREATED)
                 return redirect('profile')
+                # return render(request, 'account/profile.html', {'user_data': serializer.data})
+
             else:
                 return Response({'error': 'Номер телефона не найден в сессии.'}, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -42,43 +44,63 @@ class UserRegistrationPhone(APIView):
 
 class UserAuthentication(APIView):
     def post(self, request):
-        phone_number = request.data.get('phone_number')
-        password = request.data.get('password')
-        try:
-            user = User.objects.get(phone_number=phone_number)
-            if check_password(password, user.password):
-                serializer = UserSerializer(user)
+        if 'phone_number' in request.data and 'password' in request.data:
+            phone_number = request.data.get('phone_number')
+            request.session['phone_number'] = phone_number
 
-                # return Response(serializer.data, status=status.HTTP_200_OK)
-                return render(request, 'account/profile.html', {'user_data': serializer.data})
+            password = request.data.get('password')
+            try:
+                user = User.objects.get(phone_number=phone_number)
+                if check_password(password, user.password):
+                    serializer = UserSerializer(user)
 
-            return Response({'error': 'Invalid phone number or password'}, status=status.HTTP_401_UNAUTHORIZED)
-        except User.DoesNotExist:
-            return Response({'error': 'Invalid invite code'})
+                    # return Response(serializer.data, status=status.HTTP_200_OK)
+                    return render(request, 'account/profile.html', {'user_data': serializer.data})
+            except User.DoesNotExist:
+                return Response({'error': 'Неверный логин или пароль'}, status=status.HTTP_401_UNAUTHORIZEDy)
+        elif 'invited_by' in request.data:
+            invited_by = request.data.get('invited_by')
+            if invited_by:
+                invited_user = User.objects.get(invite_code=invited_by)
+                if invited_user:
+                    phone_number = request.session.get('phone_number')
+
+                    user = User.objects.get(phone_number=phone_number)
+                    del request.session['phone_number']
+
+                    user.invited_by = invited_by
+                    user.save()
+                    serializer = UserSerializer(user)
+                    return render(request, 'account/profile.html', {'user_data': serializer.data})
+                    # return Response({'message': 'Invite code activated successfully'}, status=201)
+                else:
+                    return Response({'error': invited_by}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({'error': 'Please enter an invite code'}, status=400)
 
     def get(self, request):
         return render(request, 'account/login.html')
 
 
-class UserProfile(APIView):
-    def post(self, request):
-        invited_by = request.data.get('invited_by')
-        if invited_by:
-            try:
-                invited_user = User.objects.get(invite_code=invited_by)
-                if invited_user.invited_by:
-                    user = User.objects.get(phone_number=request.user.phone_number)
-                    user.invited_by = invited_by
-                    user.save()
-                    serializer = UserSerializer(user)
-                    return render(request, 'profile', {'user_data': serializer.data})
-                    # return Response({'message': 'Invite code activated successfully'}, status=201)
-                else:
-                    return Response({'error': 'Invalid invite code'}, status=400)
-            except User.DoesNotExist:
-                return Response({'error': 'Invalid invite code'}, status=400)
-        return Response({'error': 'Please enter an invite code'}, status=400)
-
-    def get(self, request):
-        return render(request, 'account/profile.html')
+# class UserProfile(APIView):
+#     def post(self, request):
+#         invited_by = request.data.get('invited_by')
+#         if invited_by:
+#             try:
+#                 invited_user = User.objects.get(invite_code=invited_by)
+#                 if invited_user.invited_by:
+#                     user = User.objects.get(phone_number=request.user.phone_number)
+#                     user.invited_by = invited_by
+#                     user.save()
+#                     serializer = UserSerializer(user)
+#                     return render(request, 'account/profile.html', {'user_data': serializer.data})
+#                     # return Response({'message': 'Invite code activated successfully'}, status=201)
+#                 else:
+#                     return Response({'error': 'Почти дошел, но что-то пошло не так'}, status=400)
+#             except User.DoesNotExist:
+#                 return Response({'error': 'Вошел, но не дошел'}, status=400)
+#         return Response({'error': 'Please enter an invite code'}, status=400)
+#
+#     def get(self, request):
+#         return render(request, 'account/profile.html')
 
