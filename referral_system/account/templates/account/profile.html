@@ -21,12 +21,12 @@
         </div>
     </div>
 
-    <h2>Invited Users</h2>
+    <h2>Приглашенные пользователи</h2>
     <ul>
-        {% for invited_user in user_data.invited_users.all %}
+        {% for invited_user in invited_users %}
             <li>{{ invited_user.phone_number }}</li>
         {% empty %}
-            <li>No invited users yet.</li>
+            <li>Нет приглашенных пользователей</li>
         {% endfor %}
     </ul>
 

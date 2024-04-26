@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,6 +28,13 @@ SECRET_KEY = 'django-insecure-hc!69!1qdqz((rieq_)^$#(6q_x&f14k)p7(24v8nn+va6xzbo
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+
 
 ALLOWED_HOSTS = []
 
@@ -79,11 +90,11 @@ WSGI_APPLICATION = 'referral_system.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'referal_system',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv("POSTGRES_DBNAME"),
+        'USER': os.getenv("POSTGRES_USER"),
+        'PASSWORD': os.getenv("POSTGRES_PASSWORD"),
+        'HOST': os.getenv("POSTGRES_HOST"),
+        'PORT': os.getenv("POSTGRES_PORT"),
     }
 }
 

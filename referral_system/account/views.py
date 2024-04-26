@@ -62,45 +62,23 @@ class UserAuthentication(APIView):
             invited_by = request.data.get('invited_by')
             if invited_by:
                 invited_user = User.objects.get(invite_code=invited_by)
-                if invited_user:
-                    phone_number = request.session.get('phone_number')
 
-                    user = User.objects.get(phone_number=phone_number)
+                phone_number = request.session.get('phone_number')
+                user = User.objects.get(phone_number=phone_number)
+                if invited_user and (user.invite_code != invited_by):
+                    invited_users = User.objects.filter(invited_by=user.invite_code)
+
                     del request.session['phone_number']
 
                     user.invited_by = invited_by
                     user.save()
                     serializer = UserSerializer(user)
-                    return render(request, 'account/profile.html', {'user_data': serializer.data})
+                    return render(request, 'account/profile.html', {'user_data': serializer.data, 'invited_users':invited_users})
                     # return Response({'message': 'Invite code activated successfully'}, status=201)
                 else:
-                    return Response({'error': invited_by}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'error': 'Пользователь не может пригласить самого себя'}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({'error': 'Please enter an invite code'}, status=400)
+            return Response({'error': 'Введите инвайт-код'}, status=400)
 
     def get(self, request):
         return render(request, 'account/login.html')
-
-
-# class UserProfile(APIView):
-#     def post(self, request):
-#         invited_by = request.data.get('invited_by')
-#         if invited_by:
-#             try:
-#                 invited_user = User.objects.get(invite_code=invited_by)
-#                 if invited_user.invited_by:
-#                     user = User.objects.get(phone_number=request.user.phone_number)
-#                     user.invited_by = invited_by
-#                     user.save()
-#                     serializer = UserSerializer(user)
-#                     return render(request, 'account/profile.html', {'user_data': serializer.data})
-#                     # return Response({'message': 'Invite code activated successfully'}, status=201)
-#                 else:
-#                     return Response({'error': 'Почти дошел, но что-то пошло не так'}, status=400)
-#             except User.DoesNotExist:
-#                 return Response({'error': 'Вошел, но не дошел'}, status=400)
-#         return Response({'error': 'Please enter an invite code'}, status=400)
-#
-#     def get(self, request):
-#         return render(request, 'account/profile.html')
-
